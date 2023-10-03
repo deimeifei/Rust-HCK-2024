@@ -2,11 +2,14 @@ package com.company.web.springdemo.controllers;
 
 import com.company.web.springdemo.exceptions.EntityDuplicateException;
 import com.company.web.springdemo.exceptions.EntityNotFoundException;
+import com.company.web.springdemo.exceptions.UnauthorizedOperationException;
 import com.company.web.springdemo.helpers.BeerMapper;
 import com.company.web.springdemo.models.Beer;
 import com.company.web.springdemo.models.BeerDto;
+import com.company.web.springdemo.models.User;
 import com.company.web.springdemo.services.BeerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,10 +24,13 @@ public class BeerRestController {
     private final BeerService service;
     private final BeerMapper beerMapper;
 
+    private final AuthenticationHelper authenticationHelper;
+
     @Autowired
-    public BeerRestController(BeerService service, BeerMapper beerMapper) {
+    public BeerRestController(BeerService service, BeerMapper beerMapper, AuthenticationHelper authenticationHelper) {
         this.service = service;
         this.beerMapper = beerMapper;
+        this.authenticationHelper = authenticationHelper;
     }
 
     @GetMapping
@@ -48,8 +54,9 @@ public class BeerRestController {
     }
 
     @PostMapping
-    public Beer create(@Valid @RequestBody BeerDto beerDto) {
+    public Beer create(@RequestHeader HttpHeaders headers, @Valid @RequestBody BeerDto beerDto) {
         try {
+            User user = authenticationHelper.tryGetUser(headers);
             Beer beer = beerMapper.fromDto(beerDto);
             service.create(beer);
             return beer;
@@ -61,24 +68,30 @@ public class BeerRestController {
     }
 
     @PutMapping("/{id}")
-    public Beer update(@PathVariable int id, @Valid @RequestBody BeerDto beerDto) {
+    public Beer update(@RequestHeader HttpHeaders headers, @PathVariable int id, @Valid @RequestBody BeerDto beerDto) {
         try {
+            User user = authenticationHelper.tryGetUser(headers);
             Beer beer = beerMapper.fromDto(id, beerDto);
-            service.update(beer);
+            service.update(beer,user);
             return beer;
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (EntityDuplicateException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        } catch (UnauthorizedOperationException e){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
+    public void delete(@RequestHeader HttpHeaders headers, @PathVariable int id) {
         try {
-            service.delete(id);
+            User user = authenticationHelper.tryGetUser(headers);
+            service.delete(id, user);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (UnauthorizedOperationException e){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
         }
     }
 

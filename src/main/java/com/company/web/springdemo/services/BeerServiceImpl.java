@@ -2,16 +2,21 @@ package com.company.web.springdemo.services;
 
 import com.company.web.springdemo.exceptions.EntityDuplicateException;
 import com.company.web.springdemo.exceptions.EntityNotFoundException;
+import com.company.web.springdemo.exceptions.UnauthorizedOperationException;
 import com.company.web.springdemo.models.Beer;
+import com.company.web.springdemo.models.User;
 import com.company.web.springdemo.repositories.BeerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
 @Service
 public class BeerServiceImpl implements BeerService {
 
+    public static final String ONLY_ADMINS_CAN_MODIFY_BEER = "Only admins can modify beer.";
+    public static final String ONLY_ADMINS_CAN_DELETE_BEER = "Only admins can delete beer.";
     private final BeerRepository repository;
 
     @Autowired
@@ -46,7 +51,10 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public void update(Beer beer) {
+    public void update(Beer beer, User user) {
+        if(!user.isAdmin()){
+            throw new UnauthorizedOperationException(ONLY_ADMINS_CAN_MODIFY_BEER);
+        }
         boolean duplicateExists = true;
         try {
             Beer existingBeer = repository.get(beer.getName());
@@ -65,7 +73,10 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(int id, User user) {
+        if(!user.isAdmin()){
+            throw new UnauthorizedOperationException(ONLY_ADMINS_CAN_DELETE_BEER);
+        }
         repository.delete(id);
     }
 
