@@ -52,13 +52,21 @@ public class BeerRestController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
+    @GetMapping("/search")
+    public Beer getByName(@RequestParam String name) {
+        try {
+            return service.getByName(name);
+        } catch (EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
 
     @PostMapping
     public Beer create(@RequestHeader HttpHeaders headers, @Valid @RequestBody BeerDto beerDto) {
         try {
-            User user = authenticationHelper.tryGetUser(headers);
+            User user = authenticationHelper.tryGetUser(headers,headers);
             Beer beer = beerMapper.fromDto(beerDto);
-            service.create(beer);
+            service.create(beer, user);
             return beer;
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -70,7 +78,7 @@ public class BeerRestController {
     @PutMapping("/{id}")
     public Beer update(@RequestHeader HttpHeaders headers, @PathVariable int id, @Valid @RequestBody BeerDto beerDto) {
         try {
-            User user = authenticationHelper.tryGetUser(headers);
+            User user = authenticationHelper.tryGetUser(headers,headers);
             Beer beer = beerMapper.fromDto(id, beerDto);
             service.update(beer,user);
             return beer;
@@ -86,7 +94,7 @@ public class BeerRestController {
     @DeleteMapping("/{id}")
     public void delete(@RequestHeader HttpHeaders headers, @PathVariable int id) {
         try {
-            User user = authenticationHelper.tryGetUser(headers);
+            User user = authenticationHelper.tryGetUser(headers,headers);
             service.delete(id, user);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

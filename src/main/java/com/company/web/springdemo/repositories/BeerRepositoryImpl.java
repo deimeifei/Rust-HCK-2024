@@ -2,6 +2,7 @@ package com.company.web.springdemo.repositories;
 
 import com.company.web.springdemo.exceptions.EntityNotFoundException;
 import com.company.web.springdemo.models.Beer;
+import com.company.web.springdemo.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -11,23 +12,26 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Repository
+//@Repository
 public class BeerRepositoryImpl implements BeerRepository {
 
     private final List<Beer> beers;
 
-    @Autowired
-    public BeerRepositoryImpl(StyleRepository styleRepository) {
+    private final UserRepository userRepository;
+
+    //@Autowired
+    public BeerRepositoryImpl(StyleRepository styleRepository, UserRepository userRepository) {
+        this.userRepository = userRepository;
         beers = new ArrayList<>();
-        Beer beer = new Beer(1, "Glarus English Ale", 4.6);
+        Beer beer = new Beer(1, "Glarus English Ale", 4.6,userRepository.getByName("pesho"));
         beer.setStyle(styleRepository.get(1));
         beers.add(beer);
 
-        beer = new Beer(2, "Rhombus Porter", 5.0);
+        beer = new Beer(2, "Rhombus Porter", 5.0, userRepository.getByName("chavo"));
         beer.setStyle(styleRepository.get(2));
         beers.add(beer);
 
-        beer = new Beer(3, "Opasen Char", 6.6);
+        beer = new Beer(3, "Opasen Char", 6.6, userRepository.getByName("tanya"));
         beer.setStyle(styleRepository.get(3));
         beers.add(beer);
     }
@@ -60,9 +64,10 @@ public class BeerRepositoryImpl implements BeerRepository {
     }
 
     @Override
-    public void create(Beer beer) {
+    public void create(Beer beer, User user) {
         int nextId = beers.size() + 1;
         beer.setId(nextId);
+        beer.setCreatedBy(user);
         beers.add(beer);
     }
 

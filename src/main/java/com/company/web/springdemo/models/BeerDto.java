@@ -16,6 +16,7 @@ public class BeerDto {
     @Positive(message = "StyleId should be positive")
     private int styleId;
 
+
     public BeerDto() {
     }
 
@@ -42,5 +43,6 @@ public class BeerDto {
     public void setStyleId(int styleId) {
         this.styleId = styleId;
     }
+
 
 }

@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthenticationHelper {
     public static final String AUTHORIZATION = "Authorization";
     public static final String AUTHENTICATION_ERROR = "The requested resource requires authentication.";
+    public static final String AUTHORIZATION_2 = "Authorization2";
     private final UserService userService;
 
     @Autowired
@@ -20,14 +21,22 @@ public class AuthenticationHelper {
         this.userService = userService;
     }
 
-    public User tryGetUser(HttpHeaders headers){
+    public User tryGetUser(HttpHeaders headers, HttpHeaders headers2){
         if(!headers.containsKey(AUTHORIZATION)){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    AUTHENTICATION_ERROR);
+        }
+
+
+        if(!headers2.getFirst(AUTHORIZATION_2)
+                .equals(userService.getByUsername(headers.getFirst(AUTHORIZATION)).getPassword())){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     AUTHENTICATION_ERROR);
         }
 
         try {
            String username = headers.getFirst(AUTHORIZATION);
+           String password = headers2.getFirst(AUTHORIZATION_2);
            return userService.getByUsername(username);
         } catch (EntityNotFoundException e){
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,

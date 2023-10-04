@@ -15,8 +15,8 @@ import java.util.List;
 @Service
 public class BeerServiceImpl implements BeerService {
 
-    public static final String ONLY_ADMINS_CAN_MODIFY_BEER = "Only admins can modify beer.";
-    public static final String ONLY_ADMINS_CAN_DELETE_BEER = "Only admins can delete beer.";
+    public static final String DELETE_AUTHENTICATION_ERROR = "Only admins or the creator of the beer can delete it.";
+    public static final String UPDATE_AUTHENTICATION_ERROR = "Only admins or the creator of the beer can modify it.";
     private final BeerRepository repository;
 
     @Autowired
@@ -35,7 +35,12 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public void create(Beer beer) {
+    public Beer getByName(String name) {
+        return repository.get(name);
+    }
+
+    @Override
+    public void create(Beer beer,User user) {
         boolean duplicateExists = true;
         try {
             repository.get(beer.getName());
@@ -47,37 +52,39 @@ public class BeerServiceImpl implements BeerService {
             throw new EntityDuplicateException("Beer", "name", beer.getName());
         }
 
-        repository.create(beer);
+        repository.create(beer,user);
     }
 
     @Override
     public void update(Beer beer, User user) {
-        if(!user.isAdmin()){
-            throw new UnauthorizedOperationException(ONLY_ADMINS_CAN_MODIFY_BEER);
-        }
-        boolean duplicateExists = true;
-        try {
-            Beer existingBeer = repository.get(beer.getName());
-            if (existingBeer.getId() == beer.getId()) {
+        if (user.equals(repository.get(beer.getId()).getCreatedBy()) || user.isAdmin()) {
+            boolean duplicateExists = true;
+            try {
+                Beer existingBeer = repository.get(beer.getName());
+                if (existingBeer.getId() == beer.getId()) {
+                    duplicateExists = false;
+                }
+            } catch (EntityNotFoundException e) {
                 duplicateExists = false;
             }
-        } catch (EntityNotFoundException e) {
-            duplicateExists = false;
+
+            if (duplicateExists) {
+                throw new EntityDuplicateException("Beer", "name", beer.getName());
+            }
+            repository.update(beer);
+        } else {
+            throw new UnauthorizedOperationException(UPDATE_AUTHENTICATION_ERROR);
         }
 
-        if (duplicateExists) {
-            throw new EntityDuplicateException("Beer", "name", beer.getName());
-        }
-
-        repository.update(beer);
     }
 
     @Override
     public void delete(int id, User user) {
-        if(!user.isAdmin()){
-            throw new UnauthorizedOperationException(ONLY_ADMINS_CAN_DELETE_BEER);
+        if (user.equals(get(id).getCreatedBy()) || user.isAdmin()) {
+            repository.delete(id);
+        } else {
+            throw new UnauthorizedOperationException(DELETE_AUTHENTICATION_ERROR);
         }
-        repository.delete(id);
     }
 
 }

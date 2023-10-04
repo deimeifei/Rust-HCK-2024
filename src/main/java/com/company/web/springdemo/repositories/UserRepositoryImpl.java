@@ -12,9 +12,9 @@ public class UserRepositoryImpl implements UserRepository{
 
     public UserRepositoryImpl() {
         users = new ArrayList<>();
-        users.add(new User(1,"pesho",true));
-        users.add(new User(2,"tanya",false));
-        users.add(new User(3,"chavo",true));
+        users.add(new User(1,"pesho","pesho1",true));
+        users.add(new User(2,"tanya","tanya1",false));
+        users.add(new User(3,"chavo","chavo1",true));
     }
 
     @Override
@@ -31,11 +31,11 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public User getByName(String name) {
+    public User getByName(String username) {
         return users.stream()
-                .filter(user -> user.getUsername().equals(name))
+                .filter(user -> user.getUsername().equals(username))
                 .findFirst().orElseThrow(
-                        ()-> new EntityNotFoundException("User","name",name));
+                        ()-> new EntityNotFoundException("User","username",username));
 
     }
 }

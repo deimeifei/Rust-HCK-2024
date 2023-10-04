@@ -1,5 +1,7 @@
 package com.company.web.springdemo.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
 
 public class Beer {
@@ -12,13 +14,30 @@ public class Beer {
 
     private Style style;
 
+    @JsonIgnore
+    private User createdBy;
+
     public Beer() {
     }
 
-    public Beer(int id, String name, double abv) {
+    public Beer(int id, String name, double abv, User createdBy) {
         this.id = id;
         this.name = name;
         this.abv = abv;
+        this.createdBy = createdBy;
+    }
+    public Beer(int id, String name, double abv){
+        this.id = id;
+        this.name = name;
+        this.abv = abv;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 
     public int getId() {
