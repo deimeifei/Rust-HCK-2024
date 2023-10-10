@@ -3,7 +3,6 @@ package com.company.web.springdemo.helpers;
 import com.company.web.springdemo.models.Beer;
 import com.company.web.springdemo.models.BeerDto;
 import com.company.web.springdemo.services.StyleService;
-import com.company.web.springdemo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Component;
 public class BeerMapper {
 
     private final StyleService styleService;
-
 
     @Autowired
     public BeerMapper(StyleService styleService) {

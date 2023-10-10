@@ -4,11 +4,11 @@ import com.company.web.springdemo.exceptions.EntityDuplicateException;
 import com.company.web.springdemo.exceptions.EntityNotFoundException;
 import com.company.web.springdemo.exceptions.UnauthorizedOperationException;
 import com.company.web.springdemo.models.Beer;
+import com.company.web.springdemo.models.FilterOptions;
 import com.company.web.springdemo.models.User;
 import com.company.web.springdemo.repositories.BeerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
@@ -25,25 +25,20 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public List<Beer> get(String name, Double minAbv, Double maxAbv, Integer styleId, String sortBy, String sortOrder) {
-        return repository.get(name, minAbv, maxAbv, styleId, sortBy, sortOrder);
+    public List<Beer> get(FilterOptions filterOptions) {
+        return repository.getBeer(filterOptions);
     }
 
     @Override
     public Beer get(int id) {
-        return repository.get(id);
+        return repository.getBeer(id);
     }
 
     @Override
-    public Beer getByName(String name) {
-        return repository.get(name);
-    }
-
-    @Override
-    public void create(Beer beer,User user) {
+    public void create(Beer beer, User user) {
         boolean duplicateExists = true;
         try {
-            repository.get(beer.getName());
+            repository.getBeer(beer.getName());
         } catch (EntityNotFoundException e) {
             duplicateExists = false;
         }
@@ -51,16 +46,17 @@ public class BeerServiceImpl implements BeerService {
         if (duplicateExists) {
             throw new EntityDuplicateException("Beer", "name", beer.getName());
         }
-
-        repository.create(beer,user);
+        beer.setCreatedBy(user);
+        repository.create(beer);
     }
 
     @Override
     public void update(Beer beer, User user) {
-        if (user.equals(repository.get(beer.getId()).getCreatedBy()) || user.isAdmin()) {
+        Beer repositoryBear = repository.getBeer(beer.getId());
+        if (user.getId() == (repositoryBear.getCreatedBy().getId()) || user.isAdmin()) {
             boolean duplicateExists = true;
             try {
-                Beer existingBeer = repository.get(beer.getName());
+                Beer existingBeer = repository.getBeer(beer.getName());
                 if (existingBeer.getId() == beer.getId()) {
                     duplicateExists = false;
                 }
@@ -71,6 +67,7 @@ public class BeerServiceImpl implements BeerService {
             if (duplicateExists) {
                 throw new EntityDuplicateException("Beer", "name", beer.getName());
             }
+            beer.setCreatedBy(user);
             repository.update(beer);
         } else {
             throw new UnauthorizedOperationException(UPDATE_AUTHENTICATION_ERROR);

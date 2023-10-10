@@ -44,5 +44,4 @@ public class BeerDto {
         this.styleId = styleId;
     }
 
-
 }
